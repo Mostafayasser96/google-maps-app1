@@ -21,7 +21,7 @@ import {
 import axiosInst from './instance';
 import { baseUrl } from './consts';
 import * as turf from '@turf/turf';
-import GetZones from './zoneGetter';
+// import GetZones from './zoneGetter';
 
 const MyComponent = ({
   center,
