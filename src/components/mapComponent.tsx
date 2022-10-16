@@ -140,7 +140,7 @@ const MyComponent = ({
     return response.data.data;
   }
 
-  // GetZones(mapClass as google.maps.Map);
+
 
 
   const createZone = async (objToSend: ServerPoly) => {
