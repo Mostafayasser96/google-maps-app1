@@ -21,7 +21,6 @@ import {
 import axiosInst from './instance';
 import { baseUrl } from './consts';
 import * as turf from '@turf/turf';
-// import GetZones from './zoneGetter';
 
 const MyComponent = ({
   center,
@@ -39,7 +38,6 @@ const MyComponent = ({
   const ref: any = React.createRef();
   const [polygonToEdit, setPolygonToEdit] = useState<google.maps.Polygon>();
   const [objToUpdate, setObjToUpdate] = useState<ServerPoly>();
-  const [myPoly, setMyPoly] = useState<ServerPoly>();
   const [isUpdate, setIsUpdate] = useState<boolean>();
   const [mapClass, setMapClass] = useState<google.maps.Map>();
   const [show, setShow] = useState<boolean>(false);
@@ -92,31 +90,6 @@ const MyComponent = ({
       });
     }
   }
-
-    const zoneClickListener = (newPolygon: google.maps.Polygon, poly: ServerPoly) => {
-      google.maps.event.addListener(newPolygon, 'click', (e) => {
-        console.log('the zone click event is: ', e);
-      console.log('the onClick handler zone is: ', newPolygon);
-      setObjToUpdate({ ...poly });
-      console.log(objToUpdate);
-      setIsUpdate(true);
-      toggleShow(newPolygon as google.maps.Polygon);
-      setValue("color", poly?.color as string);
-      setValue("name", poly?.label as string);
-      })
-    }
-    // const onZoneClicked = (e: google.maps.MapMouseEvent) => {
-    //   console.log('the zone click event is: ', e);
-    //   // console.log('the onClick handler zone is: ', newPolygon);
-    //   setObjToUpdate({ ...poly as ServerPoly });
-    //   console.log(objToUpdate);
-    //   setIsUpdate(true);
-    //   // toggleShow(newPolygon as google.maps.Polygon);
-    //   setValue("color", poly?.color as string);
-    //   setValue("name", poly?.label as string);
-    // }
-   
-  
   const getZones = async (mapClass: google.maps.Map) => {
     const response = await axiosInst.get(baseUrl + '/zones');
     console.log(response.data.data);
@@ -132,23 +105,24 @@ const MyComponent = ({
         strokeOpacity: .8
       })
       newPolygon.setMap(mapClass as google.maps.Map);
-      setMyPoly(poly);
-      zoneClickListener(newPolygon as google.maps.Polygon, poly as ServerPoly);
-      // google.maps.event.addListener(newPolygon, 'click', onZoneClicked);
-      // newPolygon.addListener('click', onZoneClicked);
+      const onZoneClicked = (e: google.maps.MapMouseEvent) => {
+        console.log('the zone click event is: ', e);
+        setObjToUpdate({ ...poly as ServerPoly });
+        console.log(objToUpdate);
+        setIsUpdate(true);
+        toggleShow(newPolygon as google.maps.Polygon);
+        setValue("color", poly?.color as string);
+        setValue("name", poly?.label as string);
+      }
+      newPolygon.addListener('click', onZoneClicked);
     })
     return response.data.data;
   }
-
-
-
-
   const createZone = async (objToSend: ServerPoly) => {
     console.log('the obj to send is: ', objToSend);
     const response = await axiosInst.post(baseUrl + '/zones', objToSend);
     console.log('response of creating new zone: ', response);
     await getZones(mapClass as google.maps.Map);
-    // await GetZones(mapClass as google.maps.Map);
     setShow(false);
   }
 
@@ -157,7 +131,6 @@ const MyComponent = ({
     const response = await axiosInst.put(baseUrl + '/zones/' + objToUpdate?._id, objToUpdate);
     console.log('response of updating a zone: ', response);
     await getZones(mapClass as google.maps.Map);
-    // await GetZones(mapClass as google.maps.Map);
     setShow(false);
   }
 
@@ -166,7 +139,6 @@ const MyComponent = ({
     const response = await axiosInst.delete(baseUrl + '/zones/' + zoneToDelete?._id);
     response.status === 200 && mapZone.setMap(null);
     await getZones(mapClass as google.maps.Map);
-    // await GetZones(mapClass as google.maps.Map);
     setShow(false);
   }
   const Map = (): google.maps.Map => {
