@@ -21,7 +21,12 @@ import {
 import axiosInst from './instance';
 import { baseUrl } from './consts';
 import * as turf from '@turf/turf';
-
+import { useDispatch, useSelector } from 'react-redux';
+import { 
+  fetchZones
+} from './stateSlice';
+import  MyReducer  from './stateSlice';
+import { AppDispatch } from './store';
 const MyComponent = ({
   center,
   zoom,
@@ -36,6 +41,7 @@ const MyComponent = ({
   children: MapProps['children']
 }) => {
   const ref: any = React.createRef();
+  const dispatch = useDispatch<AppDispatch>();
   const [polygonToEdit, setPolygonToEdit] = useState<google.maps.Polygon>();
   const [objToUpdate, setObjToUpdate] = useState<ServerPoly>();
   const [isUpdate, setIsUpdate] = useState<boolean>();
@@ -90,10 +96,13 @@ const MyComponent = ({
       });
     }
   }
-  const getZones = async (mapClass: google.maps.Map) => {
-    const response = await axiosInst.get(baseUrl + '/zones');
-    console.log(response.data.data);
-    response.data.data.map((poly: ServerPoly) => {
+  
+  const getZones = (mapClass: google.maps.Map) => {
+     const myZones = dispatch(fetchZones());
+     const response = myZones.then(response => response.payload);
+     console.log(response);
+     myZones.then((response) => { 
+     response.payload.map((poly: ServerPoly) => {
       const paths = poly.points.map((point) => {
         return { lat: Number(point.lat), lng: Number(point.lng) }
       })
@@ -116,7 +125,8 @@ const MyComponent = ({
       }
       newPolygon.addListener('click', onZoneClicked);
     })
-    return response.data.data;
+  })
+    return response;
   }
   const createZone = async (objToSend: ServerPoly) => {
     console.log('the obj to send is: ', objToSend);
@@ -165,28 +175,30 @@ const MyComponent = ({
       return ({ lat: point.lat().toString(), lng: point.lng().toString() })
     })
     console.log('inside drawer polygon: ', myZones);
-    myZones.map((zones) => {
-      const turfPaths = zones.points.map((point) => {
-        return [Number(point.lat), Number(point.lng)]
-      })
-      console.log(turfPaths);
-      turfPaths.push(turfPaths[0]);
-      const poly1 = turf.polygon([turfPaths]);
-      console.log(poly1);
-      const turfPaths2 = newDrawerPolygon.getPaths().getArray()['0'].getArray().map((point) => {
-        return [Number(point.lat()), Number(point.lng())]
-      })
-      turfPaths2.push(turfPaths2[0]);
-      const poly2 = turf.polygon([turfPaths2]);
-      console.log(poly2);
-      const intersection = turf.intersect(poly1, poly2);
-      if (intersection) {
-        console.log('there is intersection, do not draw the polygon', newPaths);
-        polygon.setMap(null);
-      } else {
-        toggleShow(newDrawerPolygon);
-      }
-    })
+
+    // myZones.map((zones) => {
+    //   const turfPaths = zones.points.map((point) => {
+    //     return [Number(point.lat), Number(point.lng)]
+    //   })
+    //   console.log(turfPaths);
+    //   turfPaths.push(turfPaths[0]);
+    //   const poly1 = turf.polygon([turfPaths]);
+    //   console.log(poly1);
+    //   const turfPaths2 = newDrawerPolygon.getPaths().getArray()['0'].getArray().map((point) => {
+    //     return [Number(point.lat()), Number(point.lng())]
+    //   })
+    //   turfPaths2.push(turfPaths2[0]);
+    //   const poly2 = turf.polygon([turfPaths2]);
+    //   console.log(poly2);
+    //   const intersection = turf.intersect(poly1, poly2);
+    //   if (intersection) {
+    //     console.log('there is intersection, do not draw the polygon', newPaths);
+    //     polygon.setMap(null);
+    //   } else {
+    //     toggleShow(newDrawerPolygon);
+    //   }
+    // })
+
     setIsUpdate(false);
   }
   useEffect(() => {
@@ -194,7 +206,8 @@ const MyComponent = ({
       if (mapClass) {
         console.log('this is map:', mapClass);
         const myZones = await getZones(mapClass);
-        // const myZones = await GetZones(mapClass);
+        
+        console.log(myZones);
         const drawingManager = new google.maps.drawing.DrawingManager({
           drawingMode: google.maps.drawing.OverlayType.POLYGON,
           drawingControlOptions: {
