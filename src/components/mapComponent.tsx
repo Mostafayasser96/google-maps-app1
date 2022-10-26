@@ -21,12 +21,15 @@ import {
 import axiosInst from './instance';
 import { baseUrl } from './consts';
 import * as turf from '@turf/turf';
-import { useDispatch, useSelector } from 'react-redux';
+import { 
+  useDispatch, 
+  useSelector 
+} from 'react-redux';
 import { 
   fetchZones
 } from './stateSlice';
 import  MyReducer  from './stateSlice';
-import { AppDispatch } from './store';
+import { AppDispatch, RootState } from './store';
 const MyComponent = ({
   center,
   zoom,
@@ -175,7 +178,7 @@ const MyComponent = ({
       return ({ lat: point.lat().toString(), lng: point.lng().toString() })
     })
     console.log('inside drawer polygon: ', myZones);
-
+    
     // myZones.map((zones) => {
     //   const turfPaths = zones.points.map((point) => {
     //     return [Number(point.lat), Number(point.lng)]

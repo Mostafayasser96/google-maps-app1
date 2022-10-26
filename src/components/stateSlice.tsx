@@ -5,7 +5,6 @@ import {
 } from "@reduxjs/toolkit";
 import axiosInst from "./instance";
 import { baseUrl } from "./consts";
-import { useDispatch } from "react-redux";
 import { ServerPoly } from "../types";
 const initialState = {
 	loading: false,
@@ -17,26 +16,22 @@ const initialState = {
 	turfPaths: [[0, 0, 0]],
 	error: ''
 }
-// export const turfPathsCreator = (response?: any) => {
-// 	const turfPaths = response.data.data.map((zones: any) => {
-// 		const turfPaths = zones.points.map((point:any) => {
-// 			return [Number(point.lat), Number(point.lng)]
+
+// export const turfPathsCreator = createAsyncThunk('/zones', async() => {
+// 	const creatorResponse = await axiosInst.get(baseUrl + '/zones');
+// 	console.log(creatorResponse.data.data);
+// 	const turfPaths = creatorResponse.data.data.map((zones: ServerPoly) => {
+// 		const newTurfPaths = zones.points.map((point) => {
+// 			return [Number(point.lat), Number(point.lng), Number(point.id)];
 // 		})
-// 	    turfPaths.push(turfPaths[0]);
-// 		console.log(turfPaths);
+// 		newTurfPaths.push(newTurfPaths[0]);
+// 		return newTurfPaths;
 // 	})
 // 	return turfPaths;
-// }
+// })
 export const fetchZones = createAsyncThunk('/zones', async () => {
 	const response = await axiosInst.get(baseUrl + '/zones');
 	console.log(response.data.data);
-	response.data.data.map((zones: ServerPoly) => {
-		const turfPaths = zones.points.map((point) => {
-			return [Number(point.lat), Number(point.lng), Number(point.id)];
-		})
-		turfPaths.push(turfPaths[0]);
-    return turfPaths;
-	})
 	return response.data.data;
 });
 const zoneSlice = createSlice({
@@ -49,12 +44,22 @@ const zoneSlice = createSlice({
 		});
 		builder.addCase(fetchZones.fulfilled, (state, action) => {
 			state.serverData = action.payload;
-			
-			state.loading = false;
+			const turfPathsMethod = action.payload.map((zones: ServerPoly) => {
+				const turfPaths = zones.points.map((point) => {
+					return [Number(point.lat), Number(point.lng), Number(point.id)];
+				})
+				turfPaths.push(turfPaths[0]);
+				return turfPaths;
+			})
+			state.turfPaths = turfPathsMethod;
+      state.loading = false;
 		});
 		builder.addCase(fetchZones.rejected, (state) => {
 			state.loading = false;
-		})
+		});
+		// builder.addCase(turfPathsCreator.fulfilled, (state, action) => {
+		// 	state.turfPaths = action.payload;
+		// })
 	}
 })
 const MyReducer = zoneSlice.reducer;

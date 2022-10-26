@@ -2,18 +2,18 @@ import React from 'react';
 import {
 	configureStore
 } from '@reduxjs/toolkit';
-import responseReducer from './stateSlice';
+import responseExtraReducer from './stateSlice';
 
 const InitStore = () => {
 	const store = configureStore({
 		reducer: {
-			response: responseReducer
+			response: responseExtraReducer
 		}
 	})
 	return store;
 }
 
 
-
+export type RootState = ReturnType <typeof InitStore>;
 export type AppDispatch = ReturnType<typeof InitStore>['dispatch'];
 export default InitStore;
