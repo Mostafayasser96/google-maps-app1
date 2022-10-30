@@ -44,7 +44,7 @@ const zoneSlice = createSlice({
 		});
 		builder.addCase(fetchZones.fulfilled, (state, action) => {
 			state.serverData = action.payload;
-			const turfPathsMethod = action.payload.map((zones: ServerPoly) => {
+			const turfPathsMethod =  action.payload.map((zones: ServerPoly) => {
 				const turfPaths = zones.points.map((point) => {
 					return [Number(point.lat), Number(point.lng), Number(point.id)];
 				})
@@ -52,7 +52,7 @@ const zoneSlice = createSlice({
 				return turfPaths;
 			})
 			state.turfPaths = turfPathsMethod;
-      state.loading = false;
+			state.loading = false;
 		});
 		builder.addCase(fetchZones.rejected, (state) => {
 			state.loading = false;

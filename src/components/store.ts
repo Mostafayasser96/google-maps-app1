@@ -1,19 +1,24 @@
 import React from 'react';
 import {
-	configureStore
+	configureStore,
+	Slice,
+	StateFromReducersMapObject,
+	PreloadedState
 } from '@reduxjs/toolkit';
 import responseExtraReducer from './stateSlice';
 
-const InitStore = () => {
-	const store = configureStore({
-		reducer: {
-			response: responseExtraReducer
-		}
-	})
-	return store;
+
+
+
+const reducer = {
+	response: responseExtraReducer
 }
 
+	export const store = configureStore({
+		reducer,
+	})
 
-export type RootState = ReturnType <typeof InitStore>;
-export type AppDispatch = ReturnType<typeof InitStore>['dispatch'];
-export default InitStore;
+
+export type RootState = ReturnType <typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+export default store;

@@ -1,11 +1,12 @@
 // the api key is : AIzaSyC_OWWY5Wo5BiW_xCcpA-mXVFsfMX2K9Hg
 import React, {
   useEffect,
-  useState
+  useState,
+  useCallback
 } from 'react';
 import "bootstrap/dist/css/bootstrap.min.css";
 import {
-  useForm, 
+  useForm,
   SubmitHandler
 } from "react-hook-form";
 import {
@@ -21,15 +22,17 @@ import {
 import axiosInst from './instance';
 import { baseUrl } from './consts';
 import * as turf from '@turf/turf';
-import { 
-  useDispatch, 
-  useSelector 
+import {
+  useDispatch,
+  useSelector
 } from 'react-redux';
-import { 
+import {
   fetchZones
 } from './stateSlice';
-import  MyReducer  from './stateSlice';
+import MyReducer from './stateSlice';
+import InitStore from './store';
 import { AppDispatch, RootState } from './store';
+
 const MyComponent = ({
   center,
   zoom,
@@ -45,7 +48,10 @@ const MyComponent = ({
 }) => {
   const ref: any = React.createRef();
   const dispatch = useDispatch<AppDispatch>();
+  const turfSelector = useSelector((state: RootState) => state.response.turfPaths);
   const [polygonToEdit, setPolygonToEdit] = useState<google.maps.Polygon>();
+  const [myNewZones, setMyNewZones] = useState<any>();
+  const [myDrawing, setMyDrawing] = useState<any>();
   const [objToUpdate, setObjToUpdate] = useState<ServerPoly>();
   const [isUpdate, setIsUpdate] = useState<boolean>();
   const [mapClass, setMapClass] = useState<google.maps.Map>();
@@ -55,7 +61,6 @@ const MyComponent = ({
     setShow(true);
     console.log(show)
   }
-
   const {
     register,
     handleSubmit,
@@ -99,36 +104,36 @@ const MyComponent = ({
       });
     }
   }
-  
+
   const getZones = (mapClass: google.maps.Map) => {
-     const myZones = dispatch(fetchZones());
-     const response = myZones.then(response => response.payload);
-     console.log(response);
-     myZones.then((response) => { 
-     response.payload.map((poly: ServerPoly) => {
-      const paths = poly.points.map((point) => {
-        return { lat: Number(point.lat), lng: Number(point.lng) }
+    const myZones = dispatch(fetchZones());
+    const response = myZones.then(response => response.payload);
+    console.log(response);
+    myZones.then((response) => {
+      response.payload.map((poly: ServerPoly) => {
+        const paths = poly.points.map((point) => {
+          return { lat: Number(point.lat), lng: Number(point.lng) }
+        })
+        const newPolygon = new google.maps.Polygon({
+          paths: paths,
+          fillColor: poly.color,
+          strokeColor: poly.color,
+          strokeWeight: 2,
+          strokeOpacity: .8
+        })
+        newPolygon.setMap(mapClass as google.maps.Map);
+        const onZoneClicked = (e: google.maps.MapMouseEvent) => {
+          console.log('the zone click event is: ', e);
+          setObjToUpdate({ ...poly as ServerPoly });
+          console.log(objToUpdate);
+          setIsUpdate(true);
+          toggleShow(newPolygon as google.maps.Polygon);
+          setValue("color", poly?.color as string);
+          setValue("name", poly?.label as string);
+        }
+        newPolygon.addListener('click', onZoneClicked);
       })
-      const newPolygon = new google.maps.Polygon({
-        paths: paths,
-        fillColor: poly.color,
-        strokeColor: poly.color,
-        strokeWeight: 2,
-        strokeOpacity: .8
-      })
-      newPolygon.setMap(mapClass as google.maps.Map);
-      const onZoneClicked = (e: google.maps.MapMouseEvent) => {
-        console.log('the zone click event is: ', e);
-        setObjToUpdate({ ...poly as ServerPoly });
-        console.log(objToUpdate);
-        setIsUpdate(true);
-        toggleShow(newPolygon as google.maps.Polygon);
-        setValue("color", poly?.color as string);
-        setValue("name", poly?.label as string);
-      }
-      newPolygon.addListener('click', onZoneClicked);
     })
-  })
     return response;
   }
   const createZone = async (objToSend: ServerPoly) => {
@@ -178,7 +183,7 @@ const MyComponent = ({
       return ({ lat: point.lat().toString(), lng: point.lng().toString() })
     })
     console.log('inside drawer polygon: ', myZones);
-    
+    console.log('this is turf', turfSelector);
     // myZones.map((zones) => {
     //   const turfPaths = zones.points.map((point) => {
     //     return [Number(point.lat), Number(point.lng)]
@@ -203,14 +208,26 @@ const MyComponent = ({
     // })
 
     setIsUpdate(false);
+
+  };
+  const myListener = (drawingManager: any, myZones: any) => {
+    google.maps.event.addListener(drawingManager, 'polygoncomplete', (polygon) => {
+      onPolygonComplete(polygon, myZones);
+    });
   }
+  useEffect(() => {
+    if (myDrawing && myNewZones) {
+      myListener(myDrawing, myNewZones);
+    }
+
+  }, [myDrawing, myNewZones]);
   useEffect(() => {
     (async () => {
       if (mapClass) {
         console.log('this is map:', mapClass);
         const myZones = await getZones(mapClass);
-        
         console.log(myZones);
+        setMyNewZones(myZones);
         const drawingManager = new google.maps.drawing.DrawingManager({
           drawingMode: google.maps.drawing.OverlayType.POLYGON,
           drawingControlOptions: {
@@ -223,9 +240,8 @@ const MyComponent = ({
           },
           map: mapClass,
         })
-        google.maps.event.addListener(drawingManager, 'polygoncomplete', (polygon) => {
-          onPolygonComplete(polygon, myZones);
-        });
+        setMyDrawing(drawingManager);
+
       }
     })()
   }, [mapClass])
