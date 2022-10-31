@@ -1,8 +1,7 @@
 // the api key is : AIzaSyC_OWWY5Wo5BiW_xCcpA-mXVFsfMX2K9Hg
 import React, {
   useEffect,
-  useState,
-  useCallback
+  useState
 } from 'react';
 import "bootstrap/dist/css/bootstrap.min.css";
 import {
@@ -29,8 +28,6 @@ import {
 import {
   fetchZones
 } from './stateSlice';
-import MyReducer from './stateSlice';
-import InitStore from './store';
 import { AppDispatch, RootState } from './store';
 
 const MyComponent = ({
@@ -206,6 +203,33 @@ const MyComponent = ({
     //     toggleShow(newDrawerPolygon);
     //   }
     // })
+
+    // const poly1 = turf.polygon([turfSelector]);
+    // console.log(poly1);
+    // const turfPaths2 = newDrawerPolygon.getPaths().getArray()['0'].getArray().map((point) => {
+    //   return [Number(point.lat()), Number(point.lng())]
+    // })
+    // turfPaths2.push(turfPaths2[0]);
+    // const poly2 = turf.polygon([turfPaths2]);
+    // console.log(poly2);
+    turfSelector.map((turfPaths) => {
+      const newTurfPaths = [];
+      newTurfPaths.push(turfPaths);
+      const poly1 = turf.polygon(newTurfPaths);
+      const turfPaths2 = newDrawerPolygon.getPaths().getArray()['0'].getArray().map((point) => {
+        return [Number(point.lat()), Number(point.lng())]
+      })
+      turfPaths2.push(turfPaths2[0]);
+      const poly2 = turf.polygon([turfPaths2]);
+      const intersection = turf.intersect(poly1, poly2);
+      if (intersection) {
+        console.log('there is intersection, do not draw the polygon', newPaths);
+        polygon.setMap(null);
+      } else {
+        toggleShow(newDrawerPolygon);
+      }
+    })
+
 
     setIsUpdate(false);
 
