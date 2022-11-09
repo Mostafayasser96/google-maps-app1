@@ -31,3 +31,7 @@ export interface ServerPoly {
 	points: {lat: string, lng: string, id?: string}[];
 	_id?: string;
 }
+export interface PayloadType {
+	lat: string;
+	lng: string;
+}

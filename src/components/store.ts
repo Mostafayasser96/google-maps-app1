@@ -3,15 +3,19 @@ import {
 	configureStore,
 	Slice,
 	StateFromReducersMapObject,
-	PreloadedState
+	PreloadedState,
+	combineReducers
 } from '@reduxjs/toolkit';
-import responseExtraReducer from './stateSlice';
+import {reducer1, reducer2 } from './stateSlice';
 
 
 
 
 const reducer = {
-	response: responseExtraReducer
+	response: combineReducers({
+		reducer1,
+	  reducer2
+	})
 }
 
 	export const store = configureStore({

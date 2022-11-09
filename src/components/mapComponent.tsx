@@ -26,9 +26,10 @@ import {
   useSelector
 } from 'react-redux';
 import {
-  fetchZones
+  fetchZones, reducer1
 } from './stateSlice';
 import { AppDispatch, RootState } from './store';
+import { zonesType } from './actions';
 
 const MyComponent = ({
   center,
@@ -45,7 +46,7 @@ const MyComponent = ({
 }) => {
   const ref: any = React.createRef();
   const dispatch = useDispatch<AppDispatch>();
-  const turfSelector = useSelector((state: RootState) => state.response.turfPaths);
+  // const turfSelector = useSelector((state: RootState) => state.response.turfPaths);
   const [polygonToEdit, setPolygonToEdit] = useState<google.maps.Polygon>();
   const [myNewZones, setMyNewZones] = useState<any>();
   const [myDrawing, setMyDrawing] = useState<any>();
@@ -180,7 +181,7 @@ const MyComponent = ({
       return ({ lat: point.lat().toString(), lng: point.lng().toString() })
     })
     console.log('inside drawer polygon: ', myZones);
-    console.log('this is turf', turfSelector);
+    // console.log('this is turf', turfSelector);
     // myZones.map((zones) => {
     //   const turfPaths = zones.points.map((point) => {
     //     return [Number(point.lat), Number(point.lng)]
@@ -212,25 +213,28 @@ const MyComponent = ({
     // turfPaths2.push(turfPaths2[0]);
     // const poly2 = turf.polygon([turfPaths2]);
     // console.log(poly2);
-    turfSelector.map((turfPaths) => {
-      const newTurfPaths = [];
-      newTurfPaths.push(turfPaths);
-      const poly1 = turf.polygon(newTurfPaths);
-      const turfPaths2 = newDrawerPolygon.getPaths().getArray()['0'].getArray().map((point) => {
-        return [Number(point.lat()), Number(point.lng())]
-      })
-      turfPaths2.push(turfPaths2[0]);
-      const poly2 = turf.polygon([turfPaths2]);
-      const intersection = turf.intersect(poly1, poly2);
-      if (intersection) {
-        console.log('there is intersection, do not draw the polygon', newPaths);
-        polygon.setMap(null);
-      } else {
-        toggleShow(newDrawerPolygon);
-      }
-    })
+    // turfSelector.map((turfPaths) => {
+    //   const newTurfPaths = [];
+    //   newTurfPaths.push(turfPaths);
+    //   const poly1 = turf.polygon(newTurfPaths);
+    //   const turfPaths2 = newDrawerPolygon.getPaths().getArray()['0'].getArray().map((point) => {
+    //     return [Number(point.lat()), Number(point.lng())]
+    //   })
+    //   turfPaths2.push(turfPaths2[0]);
+    //   const poly2 = turf.polygon([turfPaths2]);
+    //   const intersection = turf.intersect(poly1, poly2);
+    //   if (intersection) {
+    //     console.log('there is intersection, do not draw the polygon', newPaths);
+    //     polygon.setMap(null);
+    //   } else {
+    //     toggleShow(newDrawerPolygon);
+    //   }
 
 
+      const dis = dispatch(reducer1());
+      console.log(dis);
+      // const dis2 = dispatch(reducer2());
+      // console.log(dis2);
     setIsUpdate(false);
 
   };
