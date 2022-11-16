@@ -1,14 +1,7 @@
 import React from "react";
 import {
 	createSlice,
-	createAsyncThunk,
-	createReducer,
-	PayloadAction
 } from "@reduxjs/toolkit";
-import axiosInst from "./instance";
-import { baseUrl } from "./consts";
-import { turfActionType, zonesType } from "./actions";
-import { ServerPoly } from "../types";
 
 
 const initialState = {
@@ -16,48 +9,32 @@ const initialState = {
 	serverData: [{
 		color: '',
 		label: '',
-		points: [{ lat: '', lng: '' }]
+		points: [{ lat: '', lng: '' }],
 	}],
-	turfPaths: [{lat: '', lng: ''}],
+	turfPaths: [{ lat: '', lng: ''}],
 	error: ''
 }
 
-export const fetchZones = createAsyncThunk('/zones', async () => {
-	const response = await axiosInst.get(baseUrl + '/zones');
-	console.log(response.data.data);
-	return response.data.data;
-});
 const zoneSlice = createSlice({
 	name: 'response',
-	initialState: initialState,
-	// reducers: {
-	//    reducer1: createReducer(initialState, (builder) => {
-	// 		builder.addCase(zonesAction, (state, action) => {
-  //         state.serverData = action.payload;
-	// 		})
-	// 	 }),
-	// 	 reducer2: createReducer(initialState, (builder) => {
-	// 		builder.addCase(turfsAction, (state, action) => {
-	// 			   state.turfPaths = action.payload;
-	// 		})
-	// 	 })
-	// },
+	initialState,
 	reducers: {
-		reducer1: (state, action: PayloadAction<ServerPoly[]>) => {
-			switch(action.type){
-				case '/zones': 
-            state.serverData = action.payload;
-			}
-		},
-		reducer2: (state = initialState, action) => {
-      switch(action.type){
-				case '/turfs':
-					state.turfPaths = action.payload;
-			}
+		reducer1: (state, action) => {
+			state.serverData = action.payload.serverData;
 		}
 	}
-	
-})
-const MyReducer = zoneSlice.reducer;
-export const { reducer1, reducer2 } = zoneSlice.actions;
-export default MyReducer;
+});
+
+export const { reducer1 } = zoneSlice.actions;
+
+export default zoneSlice.reducer;
+
+
+
+
+
+
+
+
+
+

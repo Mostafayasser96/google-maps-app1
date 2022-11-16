@@ -25,11 +25,8 @@ import {
   useDispatch,
   useSelector
 } from 'react-redux';
-import {
-  fetchZones, reducer1
-} from './stateSlice';
-import { AppDispatch, RootState } from './store';
-import { zonesType } from './actions';
+import { RootState } from './store';
+import { reducer1 } from './stateSlice';
 
 const MyComponent = ({
   center,
@@ -45,8 +42,8 @@ const MyComponent = ({
   children: MapProps['children']
 }) => {
   const ref: any = React.createRef();
-  const dispatch = useDispatch<AppDispatch>();
-  // const turfSelector = useSelector((state: RootState) => state.response.turfPaths);
+  const dispatch = useDispatch();
+  const turfSelector = useSelector((state: RootState) => state.payload);
   const [polygonToEdit, setPolygonToEdit] = useState<google.maps.Polygon>();
   const [myNewZones, setMyNewZones] = useState<any>();
   const [myDrawing, setMyDrawing] = useState<any>();
@@ -103,36 +100,34 @@ const MyComponent = ({
     }
   }
 
-  const getZones = (mapClass: google.maps.Map) => {
-    const myZones = dispatch(fetchZones());
-    const response = myZones.then(response => response.payload);
-    console.log(response);
-    myZones.then((response) => {
-      response.payload.map((poly: ServerPoly) => {
-        const paths = poly.points.map((point) => {
-          return { lat: Number(point.lat), lng: Number(point.lng) }
-        })
-        const newPolygon = new google.maps.Polygon({
-          paths: paths,
-          fillColor: poly.color,
-          strokeColor: poly.color,
-          strokeWeight: 2,
-          strokeOpacity: .8
-        })
-        newPolygon.setMap(mapClass as google.maps.Map);
-        const onZoneClicked = (e: google.maps.MapMouseEvent) => {
-          console.log('the zone click event is: ', e);
-          setObjToUpdate({ ...poly as ServerPoly });
-          console.log(objToUpdate);
-          setIsUpdate(true);
-          toggleShow(newPolygon as google.maps.Polygon);
-          setValue("color", poly?.color as string);
-          setValue("name", poly?.label as string);
-        }
-        newPolygon.addListener('click', onZoneClicked);
+  const getZones = async (mapClass: google.maps.Map) => {
+    const response = await axiosInst.get(baseUrl + '/zones');
+    const myZones: ServerPoly[] = dispatch(reducer1(response.data.data)).payload;
+    console.log(myZones);
+    response.data.data.map((response: ServerPoly) => {
+      const paths = response.points.map((point) => {
+        return { lat: Number(point.lat), lng: Number(point.lng) }
       })
+      const newPolygon = new google.maps.Polygon({
+        paths: paths,
+        fillColor: response.color,
+        strokeColor: response.color,
+        strokeWeight: 2,
+        strokeOpacity: .8
+      })
+      newPolygon.setMap(mapClass as google.maps.Map);
+      const onZoneClicked = (e: google.maps.MapMouseEvent) => {
+        console.log('the zone click event is: ', e);
+        setObjToUpdate({ ...response as ServerPoly });
+        console.log(objToUpdate);
+        setIsUpdate(true);
+        toggleShow(newPolygon as google.maps.Polygon);
+        setValue("color", response?.color as string);
+        setValue("name", response?.label as string);
+      }
+      newPolygon.addListener('click', onZoneClicked);
     })
-    return response;
+    return response.data.data;
   }
   const createZone = async (objToSend: ServerPoly) => {
     console.log('the obj to send is: ', objToSend);
@@ -181,62 +176,30 @@ const MyComponent = ({
       return ({ lat: point.lat().toString(), lng: point.lng().toString() })
     })
     console.log('inside drawer polygon: ', myZones);
-    // console.log('this is turf', turfSelector);
-    // myZones.map((zones) => {
-    //   const turfPaths = zones.points.map((point) => {
-    //     return [Number(point.lat), Number(point.lng)]
-    //   })
-    //   console.log(turfPaths);
-    //   turfPaths.push(turfPaths[0]);
-    //   const poly1 = turf.polygon([turfPaths]);
-    //   console.log(poly1);
-    //   const turfPaths2 = newDrawerPolygon.getPaths().getArray()['0'].getArray().map((point) => {
-    //     return [Number(point.lat()), Number(point.lng())]
-    //   })
-    //   turfPaths2.push(turfPaths2[0]);
-    //   const poly2 = turf.polygon([turfPaths2]);
-    //   console.log(poly2);
-    //   const intersection = turf.intersect(poly1, poly2);
-    //   if (intersection) {
-    //     console.log('there is intersection, do not draw the polygon', newPaths);
-    //     polygon.setMap(null);
-    //   } else {
-    //     toggleShow(newDrawerPolygon);
-    //   }
-    // })
-
-    // const poly1 = turf.polygon([turfSelector]);
-    // console.log(poly1);
-    // const turfPaths2 = newDrawerPolygon.getPaths().getArray()['0'].getArray().map((point) => {
-    //   return [Number(point.lat()), Number(point.lng())]
-    // })
-    // turfPaths2.push(turfPaths2[0]);
-    // const poly2 = turf.polygon([turfPaths2]);
-    // console.log(poly2);
-    // turfSelector.map((turfPaths) => {
-    //   const newTurfPaths = [];
-    //   newTurfPaths.push(turfPaths);
-    //   const poly1 = turf.polygon(newTurfPaths);
-    //   const turfPaths2 = newDrawerPolygon.getPaths().getArray()['0'].getArray().map((point) => {
-    //     return [Number(point.lat()), Number(point.lng())]
-    //   })
-    //   turfPaths2.push(turfPaths2[0]);
-    //   const poly2 = turf.polygon([turfPaths2]);
-    //   const intersection = turf.intersect(poly1, poly2);
-    //   if (intersection) {
-    //     console.log('there is intersection, do not draw the polygon', newPaths);
-    //     polygon.setMap(null);
-    //   } else {
-    //     toggleShow(newDrawerPolygon);
-    //   }
-
-
-      const dis = dispatch(reducer1());
-      console.log(dis);
-      // const dis2 = dispatch(reducer2());
-      // console.log(dis2);
+    myZones.map((response) => {
+      const turfPaths = response.points.map((point) => {
+        return [Number(point.lat), Number(point.lng)];
+      })
+      turfPaths.push(turfPaths[0]);
+      const poly1 = turf.polygon([turfPaths]);
+      console.log(poly1);
+      console.log(newDrawerPolygon.getPaths().getArray()['0'].getArray());
+      const turfPaths2 = newDrawerPolygon.getPaths().getArray()['0'].getArray().map((point) => {
+        return [Number(point.lat()), Number(point.lng())];
+      })
+      turfPaths2.push(turfPaths2[0]);
+      const poly2 = turf.polygon([turfPaths2]);
+      console.log(poly2);
+      const intersection = turf.intersect(poly1, poly2);
+      if (intersection) {
+        console.log('there is intersection, do not draw the polygon', newPaths);
+        polygon.setMap(null);
+        toggleShow(undefined);
+      } else {
+        toggleShow(polygon);
+      }
+    })
     setIsUpdate(false);
-
   };
   const myListener = (drawingManager: any, myZones: any) => {
     google.maps.event.addListener(drawingManager, 'polygoncomplete', (polygon) => {
@@ -247,7 +210,6 @@ const MyComponent = ({
     if (myDrawing && myNewZones) {
       myListener(myDrawing, myNewZones);
     }
-
   }, [myDrawing, myNewZones]);
   useEffect(() => {
     (async () => {
@@ -269,7 +231,6 @@ const MyComponent = ({
           map: mapClass,
         })
         setMyDrawing(drawingManager);
-
       }
     })()
   }, [mapClass])

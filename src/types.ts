@@ -25,6 +25,12 @@ export interface LoginInputs{
 	password: string;
 	passwordRequired: string
 }
+export interface ZonesType {
+	loading: boolean;
+	serverData: ServerPoly[];
+	turfPaths: {lat: string, lng: string}[];
+	error: string;
+}
 export interface ServerPoly {
 	color: string;
 	label: string;

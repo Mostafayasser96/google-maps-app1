@@ -1,26 +1,15 @@
-import {  createAction } from "@reduxjs/toolkit";
-import { PayloadType, ServerPoly } from "../types";
-
-export const zonesType = '/zones';
-export const turfActionType = '/turfs';
-
-// export const zonesAction = createAction(zonesType, (payload: ServerPoly[]) => {
-//   return  { 
-//     payload: payload
-//   };
-// });
+import { createAction } from "@reduxjs/toolkit";
+import { ZonesType } from '../types';
 
 
-// export const turfsAction = createAction(turfActionType, (payload: PayloadType[]) => {
-//   return {
-//     payload: payload
-//   }
-// });
 
-// export const turfsAction = createAction<PayloadAction[]>(turfActionType);
+const zonesType = '/zones';
+export const zonesAction = createAction<ZonesType>(zonesType);
 
-// export const turfsAction = createAction(turfActionType, (payload: PayloadType[]) => {
-//   return {
-//     payload: payload
-//   }
-// });
+
+const turfsType = '/turfs';
+export const turfsAction = createAction(turfsType, (payload: {lat: string, lng: string}[]) => {
+  return {
+    payload: payload
+  }
+});
