@@ -1,7 +1,3 @@
-export interface Path {
-	lat: number
-	lng: number
-}
 export interface Inputs {
 	color: string
 	colorRequired: string
@@ -18,26 +14,15 @@ export interface MapProps extends google.maps.MapOptions {
     }[];
 	ref: React.RefObject<HTMLInputElement>
 }
-
-export interface LoginInputs{
-    username: string;
-	usernameRequired: string;
-	password: string;
-	passwordRequired: string
-}
-export interface ZonesType {
-	loading: boolean;
-	serverData: ServerPoly[];
-	turfPaths: {lat: string, lng: string}[];
-	error: string;
-}
 export interface ServerPoly {
 	color: string;
 	label: string;
 	points: {lat: string, lng: string, id?: string}[];
 	_id?: string;
 }
-export interface PayloadType {
-	lat: string;
-	lng: string;
+export interface LoginInputs{
+  username: string;
+	usernameRequired: string;
+	password: string;
+	passwordRequired: string
 }

@@ -17,16 +17,12 @@ import {
   Inputs,
   MapProps,
   ServerPoly,
-} from '../types';
+} from './comp-types';
 import axiosInst from './instance';
-import { baseUrl } from './consts';
-import * as turf from '@turf/turf';
-import {
-  useDispatch,
-  useSelector
-} from 'react-redux';
-import { RootState } from './store';
-import { reducer1 } from './stateSlice';
+import { baseUrl } from '../constants/consts';
+import { useDispatch } from 'react-redux';
+import { reducer1 } from '../redux/stateSlice';
+import turfCompoarator from './comparator';
 
 const MyComponent = ({
   center,
@@ -43,7 +39,6 @@ const MyComponent = ({
 }) => {
   const ref: any = React.createRef();
   const dispatch = useDispatch();
-  const turfSelector = useSelector((state: RootState) => state.payload);
   const [polygonToEdit, setPolygonToEdit] = useState<google.maps.Polygon>();
   const [myNewZones, setMyNewZones] = useState<any>();
   const [myDrawing, setMyDrawing] = useState<any>();
@@ -176,25 +171,12 @@ const MyComponent = ({
       return ({ lat: point.lat().toString(), lng: point.lng().toString() })
     })
     console.log('inside drawer polygon: ', myZones);
-    myZones.map((response) => {
-      const turfPaths = response.points.map((point) => {
-        return [Number(point.lat), Number(point.lng)];
-      })
-      turfPaths.push(turfPaths[0]);
-      const poly1 = turf.polygon([turfPaths]);
-      console.log(poly1);
-      console.log(newDrawerPolygon.getPaths().getArray()['0'].getArray());
-      const turfPaths2 = newDrawerPolygon.getPaths().getArray()['0'].getArray().map((point) => {
-        return [Number(point.lat()), Number(point.lng())];
-      })
-      turfPaths2.push(turfPaths2[0]);
-      const poly2 = turf.polygon([turfPaths2]);
-      console.log(poly2);
-      const intersection = turf.intersect(poly1, poly2);
-      if (intersection) {
+    const comparison = turfCompoarator(myZones, polygon);
+    console.log(comparison);
+    comparison.map((value) => {
+      if (value !== null) {
         console.log('there is intersection, do not draw the polygon', newPaths);
         polygon.setMap(null);
-        toggleShow(undefined);
       } else {
         toggleShow(polygon);
       }

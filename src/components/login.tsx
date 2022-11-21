@@ -14,7 +14,7 @@ import {
 } from 'react-hook-form';
 import {
 	LoginInputs
-} from '../types';
+} from './comp-types';
 import axios, {
 	AxiosResponse
 } from 'axios';
@@ -23,7 +23,7 @@ import {
 } from 'react-router-dom';
 import {
 	baseUrl
-} from './consts';
+} from '../constants/consts';
 
 
 const Login = () => {

@@ -1,5 +1,8 @@
 import { createAction } from "@reduxjs/toolkit";
-import { ZonesType } from '../types';
+import { 
+  ZonesType,
+  Path
+} from './redux-types';
 
 
 
@@ -8,7 +11,7 @@ export const zonesAction = createAction<ZonesType>(zonesType);
 
 
 const turfsType = '/turfs';
-export const turfsAction = createAction(turfsType, (payload: {lat: string, lng: string}[]) => {
+export const turfsAction = createAction(turfsType, (payload: Path[]) => {
   return {
     payload: payload
   }
